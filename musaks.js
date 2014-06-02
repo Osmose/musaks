@@ -6,6 +6,7 @@
     var sourceNodes = [];
     var currentTool = 'move';
     var currentConnection = null;
+    var currentNode = null;
 
     function linePath(startX, startY, endX, endY) {
         return 'M' + startX + ' '+ startY + ' L' + endX + ' ' + endY;
@@ -39,6 +40,20 @@
         return connection;
     };
 
+    function getTopNodeAt(x, y) {
+        var elements = paper.getElementsByPoint();
+        if (elements) {
+            var topNode = null;
+            for (var k = 0; k < elements.length; k++) {
+                var element = elements[k];
+                if (element.isNode) {
+                    topNode = element;
+                    break;
+                }
+            }
+        }
+    }
+
     function VisualNode(x, y, audioNode, color) {
         var self = this;
         this.connections = [];
@@ -67,22 +82,11 @@
             }
         }, function() {
             if (currentConnection) {
-                var elements = paper.getElementsByPoint(currentConnection.endX,
-                                                        currentConnection.endY);
-                if (elements) {
-                    var topNode = null;
-                    for (var k = 0; k < elements.length; k++) {
-                        var element = elements[k];
-                        if (element.isNode) {
-                            topNode = element;
-                            break;
-                        }
-                    }
-
-                    if (topNode) {
-                        self.connections.push(paper.circleConnection(this, topNode));
-                        self.audioNode.connect(topNode.visualNode.audioNode);
-                    }
+                var topNode = getTopNodeAt(currentConnection.endX,
+                                           currentConnection.endY);
+                if (topNode) {
+                    self.connections.push(paper.circleConnection(this, topNode));
+                    self.audioNode.connect(topNode.visualNode.audioNode);
                 }
 
                 currentConnection.remove();
@@ -101,6 +105,8 @@
             gain.gain.value = 0;
             oscillator.start(0);
             sourceNodes.push(new VisualNode(e.pageX, e.pageY, gain));
+        } else if (currentTool == 'editnode') {
+
         }
     };
 

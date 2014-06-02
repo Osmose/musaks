@@ -7,13 +7,29 @@
   </head>
   <body>
     <div id="canvas"></div>
+
     <ul id="tools">
       <li class="selected" data-tool="move">Move</li>
       <li data-tool="sourcenode">Source Node</li>
       <li data-tool="connect">Connect</li>
+      <li data-tool="editnode">Edit Node</li>
     </ul>
+
+    <form id="editnode-sourcenode">
+      <label for="frequency">Frequency</label>
+      <input type="text" name="frequency">
+      <label for="type">Type</label>
+      <select name="type">
+        <option value="square">Square</option>
+        <option value="triangle">Triangle</option>
+        <option value="sawtooth">Sawtooth</option>
+        <option value="sine">Sine</option>
+      </select>
+    </form>
+
     <button id="play">Play</button>
     <button id="stop">Stop</button>
+
     <script src="jquery-2.1.1.min.js"></script>
     <script src="raphael-min.js"></script>
     <script src="musaks.js"></script>
