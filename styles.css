@@ -1,5 +1,7 @@
-svg {
+#canvas {
     border: 1px solid #000;
+    width: 800px;
+    height: 600px;
 }
 
 .selected {

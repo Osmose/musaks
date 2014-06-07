@@ -2,7 +2,8 @@
     'use strict';
 
     var audioCtx = new AudioContext();
-    var paper = new Raphael(document.getElementById('canvas'), 800, 600);
+    var $canvas = $('#canvas');
+    var paper = new Raphael($canvas[0], 800, 600);
     var sourceNodes = [];
     var currentTool = 'move';
     var currentConnection = null;
@@ -41,17 +42,20 @@
     };
 
     function getTopNodeAt(x, y) {
-        var elements = paper.getElementsByPoint();
+        var elements = paper.getElementsByPoint(x, y);
         if (elements) {
-            var topNode = null;
             for (var k = 0; k < elements.length; k++) {
                 var element = elements[k];
                 if (element.isNode) {
-                    topNode = element;
-                    break;
+                    return element;
                 }
             }
         }
+    }
+
+    function getPaperMouseCoords(event) {
+        var offset = $canvas.offset();
+        return {x: event.pageX - offset.left, y: event.pageY - offset.top};
     }
 
     function VisualNode(x, y, audioNode, color) {
@@ -95,8 +99,14 @@
         });
     }
 
+    var $editSourceForm = $('#editnode-sourcenode');
+    var $editFreq = $editSourceForm.find('[name="frequency"]');
+    var $editType = $editSourceForm.find('[name="type"]');
+
     paper.canvas.onclick = function(e) {
         e.preventDefault();
+        var mouseCoords = getPaperMouseCoords(e);
+
         if (currentTool == 'sourcenode') {
             var oscillator = audioCtx.createOscillator();
             oscillator.type = 'square';
@@ -104,11 +114,34 @@
             oscillator.connect(gain);
             gain.gain.value = 0;
             oscillator.start(0);
-            sourceNodes.push(new VisualNode(e.pageX, e.pageY, gain));
-        } else if (currentTool == 'editnode') {
 
+            var node = new VisualNode(mouseCoords.x, mouseCoords.y, gain);
+            node.nodeType = 'sourceNode';
+            node.oscillator = oscillator;
+            sourceNodes.push(node);
+        } else if (currentTool == 'editnode') {
+            var topNode = getTopNodeAt(mouseCoords.x, mouseCoords.y);
+            if (topNode) {
+                currentNode = topNode.visualNode;
+                if (currentNode.nodeType == 'sourceNode') {
+                    $editFreq.val(currentNode.oscillator.frequency.value);
+                    $editType.val(currentNode.oscillator.type);
+                }
+            }
         }
     };
+
+    $editFreq.change(function(e) {
+        if (currentNode) {
+            currentNode.oscillator.frequency.value = $editFreq.val();
+        }
+    });
+
+    $editType.change(function(e) {
+        if (currentNode) {
+            currentNode.oscillator.type = $editType.val();
+        }
+    });
 
     var $tools = $('#tools li');
     $tools.click(function(e) {
